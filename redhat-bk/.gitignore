@@ -1,0 +1,8 @@
+# Ignore sensitive data
+**/swagger.json
+**/*secrets*.yaml
+
+# Ignore generated files
+*.log
+.DS_Store
+

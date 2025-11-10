@@ -1,0 +1,34 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: redhat-keycloak
+  labels:
+    app: keycloak
+spec:
+  instances: 1
+  # ⚠️ PRODUCTION: Update hostname to your production domain
+  hostname:
+    hostname: keycloak-admin.apps.YOUR_CLUSTER_NAME
+    strict: true                    # ✅ PRODUCTION: Enforce hostname validation
+    strictBackchannel: true        # ✅ PRODUCTION: Validate backchannel calls
+  http:
+    httpEnabled: true
+  db:
+    vendor: postgres
+    host: postgresql
+    port: 5432
+    database: keycloak
+    usernameSecret:
+      name: postgresql-credentials
+      key: username
+    passwordSecret:
+      name: postgresql-credentials
+      key: password
+  additionalOptions:
+    - name: proxy-headers
+      value: xforwarded
+    - name: hostname-strict
+      value: "true"                 # ✅ PRODUCTION: Strict hostname checking
+    - name: hostname-strict-https
+      value: "true"                 # ✅ PRODUCTION: Enforce HTTPS
