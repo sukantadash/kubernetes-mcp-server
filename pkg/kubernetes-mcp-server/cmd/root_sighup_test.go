@@ -32,7 +32,7 @@ type SIGHUPSuite struct {
 
 func (s *SIGHUPSuite) SetupTest() {
 	s.mockServer = test.NewMockServer()
-	s.mockServer.Handle(&test.DiscoveryClientHandler{})
+	s.mockServer.Handle(test.NewDiscoveryClientHandler())
 	s.tempDir = s.T().TempDir()
 	s.dropInConfigDir = filepath.Join(s.tempDir, "conf.d")
 	s.Require().NoError(os.Mkdir(s.dropInConfigDir, 0755))
@@ -59,7 +59,7 @@ func (s *SIGHUPSuite) InitServer(configPath, configDir string) {
 
 	s.server, err = mcp.NewServer(mcp.Configuration{
 		StaticConfig: cfg,
-	})
+	}, nil, nil)
 	s.Require().NoError(err)
 	// Set up SIGHUP handler
 	opts := &MCPServerOptions{

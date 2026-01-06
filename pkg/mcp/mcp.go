@@ -7,6 +7,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -64,23 +65,32 @@ func (c *Configuration) isToolApplicable(tool api.ServerTool) bool {
 
 type Server struct {
 	configuration  *Configuration
+	oidcProvider   *oidc.Provider
+	httpClient     *http.Client
 	server         *mcp.Server
 	enabledTools   []string
 	enabledPrompts []string
 	p              internalk8s.Provider
 }
 
-func NewServer(configuration Configuration) (*Server, error) {
+func NewServer(configuration Configuration, oidcProvider *oidc.Provider, httpClient *http.Client) (*Server, error) {
 	s := &Server{
 		configuration: &configuration,
+		oidcProvider:  oidcProvider,
+		httpClient:    httpClient,
 		server: mcp.NewServer(
 			&mcp.Implementation{
-				Name: version.BinaryName, Title: version.BinaryName, Version: version.Version,
+				Name:       version.BinaryName,
+				Title:      version.BinaryName,
+				Version:    version.Version,
+				WebsiteURL: version.WebsiteURL,
 			},
 			&mcp.ServerOptions{
-				HasResources: false,
-				HasPrompts:   true,
-				HasTools:     true,
+				Capabilities: &mcp.ServerCapabilities{
+					Resources: nil,
+					Prompts:   &mcp.PromptCapabilities{ListChanged: !configuration.Stateless},
+					Tools:     &mcp.ToolCapabilities{ListChanged: !configuration.Stateless},
+				},
 				Instructions: configuration.ServerInstructions,
 			}),
 	}
